@@ -8,7 +8,7 @@ Handlers
 Each peer is taken care of by one or more handlers.
 
 Example:
-```
+```{go}
 // sends a getaddr message and waits 
 // some time to collect the responses
 func (peer *Peer) AddrRequestBlocking() ([]*btcwire.NetAddress, error) {
@@ -45,7 +45,7 @@ If you want to disconnect the peer from within a handler call ```peer.Deliberate
 You'll find some exemplary handlers in peerHandler.go.
 
 If you do not want to return values from your handler or you have intermediary results you can set the "state" of a peer like this:
-```
+```{go}
 func (peer *Peer) AddrRequest() {
 	addrs, err := peer.AddrRequestBlocking()
 	if err != nil {
@@ -61,7 +61,7 @@ For example, BasicHandlers sets a "disconnected" state once the peer disconnects
 Connection
 ---
 The following example shows how to connect to a peer (./example/connect.go):
-```
+```{go}
 newConnectionChan := make(chan *btcP2P.Connection)
 
 // connect to node via p2p bitcoin protocol
