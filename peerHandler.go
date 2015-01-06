@@ -112,7 +112,7 @@ func (peer *Peer) NegotiateVersionHandler(ownIpAddress string) {
 func (peer *Peer) AddrRequestBlocking() ([]*btcwire.NetAddress, error) {
 	addrs := make([]*btcwire.NetAddress, 0)
 
-	timeToWaitForAddr := time.Duration(5) * time.Second
+	timeToWaitForAddr := time.Duration(10) * time.Second
 
 	log.Println(peer, "Raw: Send getaddr")
 	peer.SendSimple(btcwire.NewMsgGetAddr())
