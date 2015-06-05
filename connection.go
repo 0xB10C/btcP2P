@@ -8,11 +8,11 @@ import (
 	"net"
 	"time"
 
-	"github.com/conformal/btcwire"
+	"github.com/btcsuite/btcd/wire"
 )
 
-var BtcnetWire = btcwire.MainNet
-var Pver = btcwire.ProtocolVersion
+var BtcnetWire = wire.MainNet
+var Pver = wire.ProtocolVersion
 var nonce = uint64(rand.Int63())
 
 type Connection struct {
@@ -35,11 +35,11 @@ type Peer struct {
 
 	// use in handlers
 	StateResultChan chan *PeerState
-	MsgChan         chan btcwire.Message
+	MsgChan         chan wire.Message
 
 	// low level channels
-	readChan       chan btcwire.Message
-	writeChan      chan btcwire.Message
+	readChan       chan wire.Message
+	writeChan      chan wire.Message
 	writeErrorChan chan error
 
 	// info about peer
@@ -51,7 +51,7 @@ type Peer struct {
 }
 
 func NewPeer(conn *Connection, StateResultChan chan *PeerState) *Peer {
-	msgChan := make(chan btcwire.Message)
+	msgChan := make(chan wire.Message)
 	writeErrorChan := make(chan error)
 	writeChan := writePump(conn.netConn, writeErrorChan)
 	readChan := readPump(conn.netConn)
@@ -80,11 +80,11 @@ func (peer *Peer) String() string {
 
 // reads messages from the connection and writes them to a channel
 // if an error occurs, the channel is closed and the function returns
-func readPump(conn net.Conn) chan btcwire.Message {
-	ch := make(chan btcwire.Message)
+func readPump(conn net.Conn) chan wire.Message {
+	ch := make(chan wire.Message)
 	go func() {
 		for {
-			msg, _, err := btcwire.ReadMessage(conn, Pver, BtcnetWire)
+			msg, _, err := wire.ReadMessage(conn, Pver, BtcnetWire)
 			if err != nil {
 				close(ch)
 				return
@@ -99,8 +99,8 @@ func readPump(conn net.Conn) chan btcwire.Message {
 // if an error is encountered during sending it emits an error over the error channel
 // and goes into an errState where it reads messages from the channel but
 // does not try to send them until the channel is closed and then it returns
-func writePump(conn net.Conn, errCh chan<- error) chan btcwire.Message {
-	ch := make(chan btcwire.Message)
+func writePump(conn net.Conn, errCh chan<- error) chan wire.Message {
+	ch := make(chan wire.Message)
 	go func() {
 		errState := false
 		for {
@@ -112,7 +112,7 @@ func writePump(conn net.Conn, errCh chan<- error) chan btcwire.Message {
 			if errState {
 				continue
 			}
-			err := btcwire.WriteMessage(conn, msg, Pver, BtcnetWire)
+			err := wire.WriteMessage(conn, msg, Pver, BtcnetWire)
 			if err != nil {
 				errState = true
 				// non blocking send, because its possible that
@@ -154,7 +154,7 @@ func (peer *Peer) DeliberateDisconnect() {
 	}()
 }
 
-func (peer *Peer) SendSimple(msg btcwire.Message) {
+func (peer *Peer) SendSimple(msg wire.Message) {
 	go func() {
 		defer func() {
 			if r := recover(); r != nil {
@@ -175,7 +175,7 @@ func (peer *Peer) SendSimple(msg btcwire.Message) {
 }
 
 func (peer *Peer) SendOwnAddr(ipAddress string) {
-	msg := btcwire.NewMsgAddr()
+	msg := wire.NewMsgAddr()
 	netAddr, err := StrIpAddrToNetAddr(ipAddress)
 	if err != nil {
 		log.Println(err)

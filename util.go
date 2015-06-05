@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/conformal/btcwire"
+	"github.com/btcsuite/btcd/wire"
 )
 
 // a slice of net addresses is ordered based on the timestamp
-type NetAddressSlice []*btcwire.NetAddress
+type NetAddressSlice []*wire.NetAddress
 
 func (s NetAddressSlice) Len() int {
 	return len(s)
@@ -20,16 +20,16 @@ func (s NetAddressSlice) Less(i, j int) bool {
 	return s[i].Timestamp.Before(s[j].Timestamp)
 }
 
-func AddrToString(addr *btcwire.NetAddress) string {
+func AddrToString(addr *wire.NetAddress) string {
 	return fmt.Sprintf("%s:%d", addr.IP, addr.Port)
 }
 
-func StrIpAddrToNetAddr(ipAddress string) (*btcwire.NetAddress, error) {
+func StrIpAddrToNetAddr(ipAddress string) (*wire.NetAddress, error) {
 	parsedAddr, err := net.ResolveTCPAddr("tcp", ipAddress)
 	if err != nil {
 		return nil, err
 	}
-	netAddr, err := btcwire.NewNetAddress(parsedAddr, 1)
+	netAddr, err := wire.NewNetAddress(parsedAddr, 1)
 	if err != nil {
 		return nil, err
 	}

@@ -1,6 +1,6 @@
 package btcP2P
 
-import "github.com/conformal/btcwire"
+import "github.com/btcsuite/btcd/wire"
 
 type State interface{}
 type StateDisconnected struct{}
@@ -8,11 +8,11 @@ type StateEstablished struct {
 	UserAgent string
 }
 type StateHasFilter struct {
-	Msg *btcwire.MsgFilterLoad
+	Msg *wire.MsgFilterLoad
 }
 
 type StateGotAddrs struct {
-	Addrs []*btcwire.NetAddress
+	Addrs []*wire.NetAddress
 }
 
 type PeerState struct {

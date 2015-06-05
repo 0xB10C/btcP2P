@@ -6,7 +6,7 @@ import (
 	"net"
 	"time"
 
-	"github.com/conformal/btcwire"
+	"github.com/btcsuite/btcd/wire"
 )
 
 // handles standard messages like ping and forwards interesting messages over the msgChan
@@ -22,9 +22,9 @@ OuterLoop:
 				break OuterLoop
 			}
 			switch msg := msg.(type) {
-			case *btcwire.MsgPing:
-				peer.SendSimple(btcwire.NewMsgPong(msg.Nonce))
-			case btcwire.Message:
+			case *wire.MsgPing:
+				peer.SendSimple(wire.NewMsgPong(msg.Nonce))
+			case wire.Message:
 				peer.MsgChan <- msg
 			default:
 				// disconnect
@@ -41,8 +41,8 @@ OuterLoop:
 	peer.SetState(&StateDisconnected{})
 }
 
-func MyNewMsgVersionFromConn(conn net.Conn, ownIpAddress string) (*btcwire.MsgVersion, error) {
-	msg, err := btcwire.NewMsgVersionFromConn(conn, nonce, 332753)
+func MyNewMsgVersionFromConn(conn net.Conn, ownIpAddress string) (*wire.MsgVersion, error) {
+	msg, err := wire.NewMsgVersionFromConn(conn, nonce, 332753)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func MyNewMsgVersionFromConn(conn net.Conn, ownIpAddress string) (*btcwire.MsgVe
 func (peer *Peer) NegotiateVersionHandler(ownIpAddress string) {
 	msg, err := MyNewMsgVersionFromConn(peer.conn, ownIpAddress)
 	CheckError(err)
-	var otherVersion *btcwire.MsgVersion
+	var otherVersion *wire.MsgVersion
 	otherVerack := false
 
 	log.Println(peer, "Send version")
@@ -73,7 +73,7 @@ func (peer *Peer) NegotiateVersionHandler(ownIpAddress string) {
 				return
 			}
 			switch msg := msg.(type) {
-			case *btcwire.MsgVersion:
+			case *wire.MsgVersion:
 				log.Println(peer, "UserAgent: ", msg.UserAgent)
 
 				if msg.Nonce == nonce {
@@ -83,13 +83,13 @@ func (peer *Peer) NegotiateVersionHandler(ownIpAddress string) {
 				}
 
 				otherVersion = msg
-				peer.SendSimple(btcwire.NewMsgVerAck())
+				peer.SendSimple(wire.NewMsgVerAck())
 
 				if otherVerack {
 					peer.SetState(&StateEstablished{otherVersion.UserAgent})
 					return
 				}
-			case *btcwire.MsgVerAck:
+			case *wire.MsgVerAck:
 				log.Println(peer, "Raw: verack")
 				if otherVersion != nil {
 					peer.SetState(&StateEstablished{otherVersion.UserAgent})
@@ -109,13 +109,13 @@ func (peer *Peer) NegotiateVersionHandler(ownIpAddress string) {
 
 // sends a getaddr message and waits
 // some time to collect the responses
-func (peer *Peer) AddrRequestBlocking() ([]*btcwire.NetAddress, error) {
-	addrs := make([]*btcwire.NetAddress, 0)
+func (peer *Peer) AddrRequestBlocking() ([]*wire.NetAddress, error) {
+	addrs := make([]*wire.NetAddress, 0)
 
 	timeToWaitForAddr := time.Duration(10) * time.Second
 
 	log.Println(peer, "Raw: Send getaddr")
-	peer.SendSimple(btcwire.NewMsgGetAddr())
+	peer.SendSimple(wire.NewMsgGetAddr())
 	timeout := time.After(timeToWaitForAddr)
 GetAddrLoop:
 	for {
@@ -125,7 +125,7 @@ GetAddrLoop:
 				return nil, errors.New("Peer disconnected unexpectedly")
 			}
 			switch msg := msg.(type) {
-			case *btcwire.MsgAddr:
+			case *wire.MsgAddr:
 				log.Println(peer, "Raw: Received ", len(msg.AddrList), "addrs")
 				for _, addr := range msg.AddrList {
 					addrs = append(addrs, addr)
