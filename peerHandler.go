@@ -41,24 +41,29 @@ OuterLoop:
 	peer.SetState(&StateDisconnected{})
 }
 
-func MyNewMsgVersionFromConn(conn net.Conn, ownIpAddress string) (*wire.MsgVersion, error) {
-	msg, err := wire.NewMsgVersionFromConn(conn, nonce, 332753)
-	if err != nil {
-		return nil, err
-	}
-	msg.Services = 1
-
+func MyNewMsgVersion(conn net.Conn, ownIpAddress string, nodeAddress string) (*wire.MsgVersion, error) {
 	addrMe, err := StrIpAddrToNetAddr(ownIpAddress)
 	if err != nil {
 		return nil, err
 	}
 
+	addrYou, err := StrIpAddrToNetAddr(nodeAddress)
+	if err != nil {
+		return nil, err
+	}
+
+	msg := wire.NewMsgVersion(addrMe, addrYou, nonce, 500000)
+	if err != nil {
+		return nil, err
+	}
+	msg.Services = 1
+
 	msg.AddrMe = *addrMe
 	return msg, nil
 }
 
-func (peer *Peer) NegotiateVersionHandler(ownIpAddress string) {
-	msg, err := MyNewMsgVersionFromConn(peer.conn, ownIpAddress)
+func (peer *Peer) NegotiateVersionHandler(ownIpAddress string, nodeAddress string) {
+	msg, err := MyNewMsgVersion(peer.conn, ownIpAddress, nodeAddress)
 	CheckError(err)
 	var otherVersion *wire.MsgVersion
 	otherVerack := false

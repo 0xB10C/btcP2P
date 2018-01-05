@@ -29,10 +29,7 @@ func StrIpAddrToNetAddr(ipAddress string) (*wire.NetAddress, error) {
 	if err != nil {
 		return nil, err
 	}
-	netAddr, err := wire.NewNetAddress(parsedAddr, 1)
-	if err != nil {
-		return nil, err
-	}
+	netAddr := wire.NewNetAddress(parsedAddr, 1)
 	return netAddr, err
 }
 

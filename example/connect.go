@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jonasnick/btcP2P"
+	".." 		// TODO: change back to "github.com/jonasnick/btcP2P" once merged
 )
 
 /*
@@ -39,7 +39,7 @@ func main() {
 	stateResultChan := make(chan *btcP2P.PeerState)
 	peer = btcP2P.NewPeer(p2pConn, stateResultChan)
 	go peer.BasicHandler()
-	go peer.NegotiateVersionHandler(ownIpAddress)
+	go peer.NegotiateVersionHandler(ownIpAddress, nodeAddress)
 	printResult(stateResultChan)
 	go peer.AddrRequest()
 	printResult(stateResultChan)
